@@ -3,7 +3,12 @@ una pequeña herramienta para automatizar el envio de stock y cobertura
 
 Primeros pasos:
 - Inicializar el entorno de python e instalar las dependencias en el archivo "requirements.txt"
-- Rellenar los datos de la bdd en el archivo "config.env"
+- Crear el archivo config.env y rellenarlo con los datos de la bdd:
+. USER=
+. PASS=
+. HOST=
+. PORT=
+. SERVICE_NAME=
 
 para realizar el envio de stock y cobertura debemos:
 
