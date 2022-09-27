@@ -49,6 +49,7 @@ and fecha >= To_date('{date_error}','dd-mm-yyyy hh24:mi:ss')
 
 ## Fecha de hoy - 1 día
 date_error = datetime.today() + timedelta(days= -1)
+date_error = date_error.strftime('%d-%m-%Y %H:%M:%S')
 
 ### extrae los skus del archivo sku_list.txt
 sku_in_cata= []
