@@ -113,11 +113,15 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
     
     ## Comprobamos si hubo errores de envio de stock
     catalyst_error = cursor.execute(check_error.format(sku_tuple=sku_tuple, date_error = date_error )).fetchall()
-    for line in catalyst_error:
-        print(line[0], line[2], line[3], line[4])
+    if len(catalyst_error) == 0:
+        print('Empuje de eventos exitoso')
+    else:
+        for line in catalyst_error:
+            print(line[0], line[2], line[3], line[4])
     
+
     # Cerramos la conexion
     cursor.close()
 
 # para saber que finalizó
-print(len(sku_tuple), 'fin')
+print('El programa finalizó')
