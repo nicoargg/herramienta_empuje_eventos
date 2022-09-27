@@ -1,4 +1,4 @@
-# Herramienta Sodimac
+# Herramienta de empuje de eventos
 una pequeña herramienta para automatizar el envio de stock y cobertura
 
 Primeros pasos:
