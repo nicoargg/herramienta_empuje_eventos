@@ -8,7 +8,7 @@ __pycache__/
 
 # data
 *.csv
-sku_list.txt
+sku_list
 # Distribution / packaging
 .Python
 build/
