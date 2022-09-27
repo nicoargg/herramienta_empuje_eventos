@@ -18,10 +18,5 @@ para realizar el envio de stock y cobertura debemos:
 5395234
 - Ejecutar el archivo "bdd_connect.py"
 
-
-para eliminar elementos antiguos:
-- pegar la id de los eventos en el archivo "id_event_list.txt" con el formato:
-4425125
-5245696
-5925953
+Para eliminar los eventos antiguos de los sku pegados en el archivo "sku_list.txt":
 - Ejecutar el archivo "delete_events.py"
