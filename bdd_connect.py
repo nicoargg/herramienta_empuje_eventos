@@ -1,6 +1,11 @@
+from datetime import datetime, timedelta
+
 import oracledb
-from plugins.extract_sku import extract_sku_list
 from decouple import config
+
+# Plugins
+from plugins.extract_sku import extract_sku_list
+
 
 username=config('USER')
 userpwd = config('PASS')
@@ -35,6 +40,16 @@ saldo_mas= """begin
  commit;
 end;"""
 
+## Checkear errores de envio de stock
+check_error = """
+SELECT * FROM catalyst_error
+WHERE sku in {sku_tuple}
+and fecha >= To_date('{date_error}','dd-mm-yyyy hh24:mi:ss')
+"""
+
+## Fecha de hoy - 1 día
+date_error = datetime.today() + timedelta(days= -1)
+
 ### extrae los skus del archivo sku_list.txt
 sku_in_cata= []
 
@@ -51,7 +66,10 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
     ## Si no estan todos los sku, se insertan en la tabla
     # se verifica comparando la cantidad de filas de la tabla 
     # con el la cantidad de skus en la tupla
+    print('skus in table catalyst_sku: ',len(sku_in_cata))
+    print('skus in sku_list.txt: ',len(sku_tuple))
     if len(sku_in_cata) < len(sku_tuple):
+        print('Faltan skus en catalyst')
         for sku in sku_tuple:
             if not sku in sku_in_cata:
                 cursor.execute(insert_query, {"sku":f'{sku}'})
@@ -70,13 +88,14 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
             if (prods[row][1]) == 'S':
                 sku = "".join(prods[row][0].split())
                 cursor.execute(cobertura_query, cp=None, sku=f'{sku}')
+                print(f'{sku}: {prods[row][1]}')
             
             ### Si tipostock = P (de la tabla producto) CC = Codprovvedorppal (prod[row][2])
             elif (prods[row][1]) == 'P':
                 ccppal = "".join(prods[row][2].split())
                 sku = "".join(prods[row][0].split())
                 cursor.execute(cobertura_query, cp=ccppal, sku=f'{sku}')
-        
+                print(f'{sku}: {prods[row][1]}, {ccppal}')
         
         ## auditar stock
         ## Obtenemos que tabla está activa
@@ -92,7 +111,10 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
     else:
         print("No se insertaron todos los sku en la tabla catalyst_sku")
     
-
+    ## Comprobamos si hubo errores de envio de stock
+    catalyst_error = cursor.execute(check_error.format(sku_tuple=sku_tuple, date_error = date_error )).fetchall()
+    for line in catalyst_error:
+        print(line[0], line[2], line[3], line[4])
     
     # Cerramos la conexion
     cursor.close()
