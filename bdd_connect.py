@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import csv
 
 import oracledb
 from decouple import config
@@ -44,15 +45,25 @@ end;"""
 check_error = """
 SELECT * FROM catalyst_error
 WHERE sku in {sku_tuple}
-and fecha >= To_date('{date_error}','dd-mm-yyyy hh24:mi:ss')
+and fecha >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
+"""
+
+events_query= """
+SELECT * FROM ultimo_saldo_sku q
+WHERE TRIM(sku) IN {sku_tuple}
+and q.fecha_modificacion >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
 """
 
 ## Fecha de hoy - 1 día
-date_error = datetime.today() + timedelta(days= -1)
-date_error = date_error.strftime('%d-%m-%Y %H:%M:%S')
+t_date = datetime.today()
+y_date = t_date + timedelta(days= -1)
+y_date = y_date.strftime('%d-%m-%Y %H:%M:%S')
 
 ### extrae los skus del archivo sku_list.txt
 sku_in_cata= []
+
+# Variable para almacenar eventos
+events = []
 
 with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
     ## Se conecta con la base de datos
@@ -113,16 +124,29 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
         print("No se insertaron todos los sku en la tabla catalyst_sku")
     
     ## Comprobamos si hubo errores de envio de stock
-    catalyst_error = cursor.execute(check_error.format(sku_tuple=sku_tuple, date_error = date_error )).fetchall()
+    catalyst_error = cursor.execute(check_error.format(sku_tuple=sku_tuple, y_date = y_date )).fetchall()
     if len(catalyst_error) == 0:
         print('Empuje de eventos exitoso')
     else:
         for line in catalyst_error:
             print(line[0], line[2], line[3], line[4])
     
+    fetch_events = cursor.execute(events_query.format(sku_tuple=sku_tuple, y_date=y_date)).fetchall()
+    events.append(fetch_events)
 
     # Cerramos la conexion
     cursor.close()
+
+
+# Nombrado fecha sin puntos para crear un archivo
+parsed_date = t_date.strftime('%d-%m-%Y %H-%M-%S')
+# Creando archivo csv con los datos de envio de stock
+with open(f"./eventos_enviados/{parsed_date}.csv", "a+", newline='') as f:
+    write = csv.writer(f)
+    for row in events[0]:
+        sku = "".join(row[1].split())
+        write.writerow([row[0], sku, row[2], row[3], row[6], row[7]])
+    f.close()
 
 # para saber que finalizó
 print('El programa finalizó')
