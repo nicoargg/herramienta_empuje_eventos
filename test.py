@@ -1,9 +1,13 @@
-from datetime import datetime
-import csv
+from decouple import config
+from plugins.events_check_plugin import events_check
+
+username=config('USER')
+userpwd = config('PASS')
+host = config('HOST')
+port = config('PORT')
+service_name = config('SERVICE_NAME')
+
+dsn = f"{host}:{port}/{service_name}"
 
 
-t_date = datetime.today()
-t_date = t_date.strftime('%d-%m-%Y %H-%M-%S')
-with open(f"{t_date}.csv", "a+") as f:
-    write = csv.writer(f)
-    write.writerow(['date','nashei','uwu'])
+events_check(username=username, userpwd=userpwd, dsn=dsn)

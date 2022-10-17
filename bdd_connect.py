@@ -48,11 +48,7 @@ WHERE sku in {sku_tuple}
 and fecha >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
 """
 
-events_query= """
-SELECT * FROM ultimo_saldo_sku q
-WHERE TRIM(sku) IN {sku_tuple}
-and q.fecha_modificacion >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
-"""
+
 
 ## Fecha de hoy - 1 día
 t_date = datetime.today()
@@ -129,24 +125,13 @@ with oracledb.connect(user=username, password=userpwd, dsn=dsn) as conn:
         print('Empuje de eventos exitoso')
     else:
         for line in catalyst_error:
-            print(line[0], line[2], line[3], line[4])
-    
-    fetch_events = cursor.execute(events_query.format(sku_tuple=sku_tuple, y_date=y_date)).fetchall()
-    events.append(fetch_events)
+            print(line[0], line[1], line[2], line[3], line[4])
 
     # Cerramos la conexion
     cursor.close()
 
 
-# Nombrado fecha sin puntos para crear un archivo
-parsed_date = t_date.strftime('%d-%m-%Y %H-%M-%S')
-# Creando archivo csv con los datos de envio de stock
-with open(f"./eventos_enviados/{parsed_date}.csv", "a+", newline='') as f:
-    write = csv.writer(f)
-    for row in events[0]:
-        sku = "".join(row[1].split())
-        write.writerow([row[0], sku, row[2], row[3], row[6], row[7]])
-    f.close()
+
 
 # para saber que finalizó
 print('El programa finalizó')
