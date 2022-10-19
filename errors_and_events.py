@@ -1,7 +1,6 @@
 from decouple import config
-from pip import main
-from plugins.error_check_plugin import error_check
-from plugins.events_check_plugin import events_check
+from push_events.error_check_plugin import error_check
+from push_events.events_check_plugin import events_check
 
 username=config('USER')
 userpwd = config('PASS')

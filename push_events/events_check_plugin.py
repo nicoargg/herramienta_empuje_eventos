@@ -2,8 +2,8 @@ from datetime import datetime
 import csv
 
 
-from plugins.extract_sku import extract_sku_list
-from plugins.execute_query import execute_query
+from push_events.extract.extract_sku import extract_sku_list
+from push_events.extract.execute_query import execute_query
 
 
 sku_tuple = extract_sku_list()
