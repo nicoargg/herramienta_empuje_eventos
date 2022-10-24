@@ -26,10 +26,13 @@ def insert_skus(username:str, userpwd:str, dsn:str, array_skus):
                 print('skus in table catalyst_sku: ',len(sku_in_cata))
                 print('skus in sku_list.txt: ',len(sku_tuple))
                 if len(sku_in_cata) < len(sku_tuple):
+                    contador = 0
                     for sku in sku_tuple:
                         if not sku in sku_in_cata:
+                            contador +=1
                             cursor.execute(insert_query.format(sku=sku))
                     cursor.execute("commit")
+                    print("se insertaron " + str(contador) + " skus")
     # Tupla, menos de 990 skus pero mas que 1        
         elif type(array_skus) == tuple:
             sku_in_cata = []
@@ -45,16 +48,20 @@ def insert_skus(username:str, userpwd:str, dsn:str, array_skus):
             print('skus in sku_list.txt: ',len(array_skus))
             if len(sku_in_cata) < len(array_skus):
                 print('Faltan skus en catalyst')
+                contador = 0
                 for sku in array_skus:
                     if not sku in sku_in_cata:
-                        cursor.execute(insert_query.format(sku=sku))
+                        contador +=1
+                        cursor.execute(insert_query.format(sku=f"'{sku}'"))
                 cursor.execute("commit")
+                print("se insertaron " + str(contador) + " skus")
         # String, un sku
         elif type(array_skus) == str:
             res = cursor.execute(catalyst_sku_query.format(sku_tuple=f"('{array_skus}')")).fetchall()
-            if len(res[0]) == 0:
-                cursor.execute(insert_query.format(sku=f"'{sku}'"))
+            if len(res) == 0:
+                cursor.execute(insert_query.format(sku=f"'{array_skus}'"))
                 cursor.execute("commit")
+                print("se insertó el sku: " + array_skus)
         cursor.close()
 
 
@@ -103,7 +110,7 @@ def stock_coverage(username:str, userpwd:str, dsn:str, array_skus):
                         sku = "".join(producto[row][0].split())
                         cursor.execute(cobertura_query.format(cp="Null", sku=f"'{sku}'"))
                         print(f'{sku}: {producto[row][1]}')
-                       # cursor.execute("commit")
+                        cursor.execute("commit")
                     
                     ### Si tipostock = P (de la tabla producto) CC = Codprovvedorppal (prod[row][2])
                     elif (producto[row][1]) == 'P':
@@ -111,7 +118,7 @@ def stock_coverage(username:str, userpwd:str, dsn:str, array_skus):
                         sku = "".join(producto[row][0].split())
                         cursor.execute(cobertura_query.format(cp=ccppal, sku=f"'{sku}'"))
                         print(f'{sku}: {producto[row][1]}, {ccppal}')
-                       # cursor.execute("commit")
+                        cursor.execute("commit")
                 ## auditar stock
                 ## Obtenemos que tabla está activa
                 # (saldonsr_a o saldonsr_b)
@@ -122,7 +129,7 @@ def stock_coverage(username:str, userpwd:str, dsn:str, array_skus):
                 cursor.execute(saldo_menos.format(saldonsr=tabla_saldo, sku_tuple=sku_tuple))
                 cursor.execute(saldo_mas.format(saldonsr=tabla_saldo, sku_tuple=sku_tuple))
                 # confirmamos cambios
-                #cursor.execute("commit")
+                cursor.execute("commit")
 
         # Tupla, menos de 990 skus pero mas que 1        
         elif type(array_skus) == tuple:
@@ -174,6 +181,12 @@ def stock_coverage(username:str, userpwd:str, dsn:str, array_skus):
                 cursor.execute(cobertura_query.format(cp=ccppal, sku=f"'{sku}'"))
                 print(f'{sku}: {producto[0][1]}, {ccppal}')
                 cursor.execute("commit")
-
+            # Extraemos la tabla actual    
+            periodo = cursor.execute(periodo_query).fetchall()
+            tabla_saldo = periodo[0][4].lower()
+            print(tabla_saldo)
+            cursor.execute(saldo_menos.format(saldonsr=tabla_saldo, sku_tuple=f"('{array_skus}')"))
+            cursor.execute(saldo_mas.format(saldonsr=tabla_saldo, sku_tuple=f"('{array_skus}')"))
+            cursor.execute("commit")
 
         cursor.close()

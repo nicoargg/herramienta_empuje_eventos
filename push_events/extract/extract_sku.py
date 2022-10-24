@@ -12,5 +12,11 @@ def extract_sku_list():
         for line in lines:
 
             sku_list.append(''.join(line.split()))
-
-    return tuple(sku_list)
+    sku_list = set(sku_list)
+    sku_list = tuple(sku_list)
+    if len(sku_list) >= 910:
+        output=[sku_list[i:i + 910] for i in range(0, len(sku_list), 910)]
+        return output
+    elif len(sku_list) == 1:
+        return sku_list[0]
+    else: return sku_list

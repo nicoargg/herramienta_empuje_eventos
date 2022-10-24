@@ -1,5 +1,5 @@
 import oracledb
-from plugins.extract_sku import extract_sku_list
+from push_events.extract.extract_sku import extract_sku_list
 from decouple import config
 
 username=config('USER')

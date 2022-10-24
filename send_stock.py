@@ -1,7 +1,7 @@
 from push_events.stock_and_coverage import insert_skus, stock_coverage
 from decouple import config
 # Plugins
-from push_events.plugins.extract_sku import extract_sku_list
+from push_events.extract.extract_sku import extract_sku_list
 
 
 username=config('USER')

@@ -17,7 +17,10 @@ and fecha >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
 
 
 def error_check(dsn, username, userpwd):
-    output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=errors_query, sku_tuple=sku_tuple)
+    if type(sku_tuple) == str:
+        output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=errors_query, sku_tuple=f"('{sku_tuple}')")
+    elif type(sku_tuple) == tuple:
+        output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=errors_query, sku_tuple=sku_tuple)
     if len(output[0]) > 0:
         # Nombrado fecha sin puntos para crear un archivo
         parsed_date = datetime.today().strftime('%d-%m-%Y %H-%M-%S')

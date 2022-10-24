@@ -16,7 +16,10 @@ and q.fecha_modificacion >= To_date('{y_date}','dd-mm-yyyy hh24:mi:ss')
 """
 
 def events_check(dsn, username, userpwd):
-    output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=events_query, sku_tuple=sku_tuple)
+    if type(sku_tuple) == str:
+        output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=events_query, sku_tuple=f"('{sku_tuple}')")
+    elif type(sku_tuple) == tuple:
+        output = execute_query(username=username, dsn=dsn, userpwd=userpwd, query=events_query, sku_tuple=sku_tuple)
     # Nombrado fecha sin puntos para crear un archivo
     if len(output[0]) > 0:
         parsed_date = datetime.today().strftime('%d-%m-%Y %H-%M-%S')
